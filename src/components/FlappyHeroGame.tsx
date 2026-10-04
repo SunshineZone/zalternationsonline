@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { soundManager } from "@/utils/sound";
-import { Volume2, VolumeX, RotateCcw, Play } from "lucide-react";
+import { Volume2, VolumeX, RotateCcw, Play, ArrowLeft } from "lucide-react";
 
 interface Pipe {
   x: number;
@@ -35,9 +35,19 @@ interface Cloud {
 
 interface FlappyHeroGameProps {
   onScoreUpdate?: (score: number, best: number) => void;
+  isActive?: boolean;
+  onGameStateChange?: (state: "idle" | "playing" | "gameover") => void;
+  onExitGame?: () => void;
+  onSwitchToDino?: () => void;
 }
 
-export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
+export default function FlappyHeroGame({
+  onScoreUpdate,
+  isActive = false,
+  onGameStateChange,
+  onExitGame,
+  onSwitchToDino,
+}: FlappyHeroGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "gameover">("idle");
   const [score, setScore] = useState<number>(0);
@@ -94,13 +104,23 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
     ];
   }, []);
 
+  const updateGameState = useCallback(
+    (newState: "idle" | "playing" | "gameover") => {
+      setGameState(newState);
+      stateRef.current.gameState = newState;
+      if (onGameStateChange) {
+        onGameStateChange(newState);
+      }
+    },
+    [onGameStateChange]
+  );
+
   const jump = useCallback(() => {
     const s = stateRef.current;
     setHasInteracted(true);
 
     if (s.gameState === "idle") {
-      s.gameState = "playing";
-      setGameState("playing");
+      updateGameState("playing");
       s.velocity = s.jumpPower;
       s.pipes = [];
       s.score = 0;
@@ -110,8 +130,7 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
     }
 
     if (s.gameState === "gameover") {
-      s.gameState = "playing";
-      setGameState("playing");
+      updateGameState("playing");
       s.heroY = 220;
       s.velocity = s.jumpPower;
       s.pipes = [];
@@ -140,7 +159,22 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
         });
       }
     }
-  }, []);
+  }, [updateGameState]);
+
+  // If activated externally, trigger start immediately
+  useEffect(() => {
+    if (isActive && gameState === "idle") {
+      jump();
+    }
+  }, [isActive, gameState, jump]);
+
+  const handleExploreWebsite = () => {
+    soundManager.playBlip();
+    updateGameState("idle");
+    if (onExitGame) {
+      onExitGame();
+    }
+  };
 
   // Keyboard handler
   useEffect(() => {
@@ -183,7 +217,8 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
       const s = stateRef.current;
       s.canvasWidth = rect.width;
       s.canvasHeight = rect.height;
-      s.groundY = rect.height - 75; // ground line height
+      s.groundY = rect.height - (rect.width < 500 ? 65 : 75); // adaptive ground height
+      s.heroX = rect.width < 500 ? Math.max(65, Math.round(rect.width * 0.22)) : 180; // responsive hero position
     };
 
     handleResize();
@@ -423,7 +458,7 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
       ctx.translate(s.heroX, s.heroY);
       ctx.rotate(s.angle);
 
-      const px = 2.4; // pixel scaling unit
+      const px = s.canvasWidth < 500 ? 1.9 : 2.4; // responsive pixel scaling unit
 
       // Red Cape billowing behind hero
       const capeWave = Math.sin(s.frameCount * 0.3) * 3;
@@ -608,8 +643,7 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
         // Ground collision
         if (s.heroY + heroRadius >= s.groundY) {
           s.heroY = s.groundY - heroRadius;
-          s.gameState = "gameover";
-          setGameState("gameover");
+          updateGameState("gameover");
           soundManager.playHit();
         }
 
@@ -682,8 +716,7 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
           if (heroBox.right > pipeLeft && heroBox.left < pipeRight) {
             if (heroBox.top < topPipeBottom || heroBox.bottom > bottomPipeTop) {
               // Hit!
-              s.gameState = "gameover";
-              setGameState("gameover");
+              updateGameState("gameover");
               soundManager.playHit();
 
               // Crash explosion particles
@@ -746,7 +779,7 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
     };
-  }, [onScoreUpdate]);
+  }, [onScoreUpdate, updateGameState]);
 
   const restartGame = () => {
     jump();
@@ -754,8 +787,14 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
 
   return (
     <div
-      className="relative w-full h-[520px] md:h-[620px] select-none overflow-hidden cursor-pointer group"
+      className="relative w-full h-[520px] md:h-[620px] select-none overflow-hidden cursor-pointer group touch-manipulation"
       onClick={jump}
+      onTouchStart={(e) => {
+        if (gameState === "playing") {
+          e.preventDefault();
+        }
+        jump();
+      }}
     >
       {/* Game Canvas */}
       <canvas
@@ -765,35 +804,54 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
       />
 
       {/* Top Controls / HUD */}
-      <div className="absolute top-4 right-4 flex items-center gap-3 z-30 pointer-events-auto">
-        {/* Retro Score HUD Box matching reference image */}
-        <div className="bg-[#0b111e]/90 border-2 border-[#203152] rounded-xl px-4 py-2 text-center shadow-pixel backdrop-blur-sm min-w-[90px]">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-pixel">
-            SCORE
-          </div>
-          <div className="text-2xl font-pixel text-yellow-300 drop-shadow">
-            {score}
-          </div>
-          <div className="border-t border-[#203152] my-1"></div>
-          <div className="text-[9px] uppercase tracking-wider text-slate-400 font-pixel">
-            BEST
-          </div>
-          <div className="text-sm font-pixel text-white">
-            {bestScore}
-          </div>
-        </div>
+      <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-30 pointer-events-auto">
+        {/* Left: Exit Game Button when active */}
+        {isActive ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleExploreWebsite();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#0b111e]/90 hover:bg-[#1a253d] border-2 border-[#203152] rounded-xl text-xs font-pixel text-slate-200 shadow-pixel transition-all hover:scale-105 active:scale-95"
+            title="Back to Portfolio"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-yellow-400" />
+            <span>Exit Game</span>
+          </button>
+        ) : (
+          <div />
+        )}
 
-        {/* Audio Mute Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleSound();
-          }}
-          className="p-2.5 bg-[#0b111e]/90 hover:bg-[#1a253d] border-2 border-[#203152] rounded-xl text-yellow-300 shadow-pixel transition-all hover:scale-105 active:scale-95"
-          title={isMuted ? "Unmute Sound" : "Mute Sound"}
-        >
-          {isMuted ? <VolumeX className="w-5 h-5 text-slate-400" /> : <Volume2 className="w-5 h-5 text-yellow-400" />}
-        </button>
+        {/* Right: Retro Score HUD & Sound Toggle */}
+        <div className="flex items-center gap-3">
+          <div className="bg-[#0b111e]/90 border-2 border-[#203152] rounded-xl px-4 py-2 text-center shadow-pixel backdrop-blur-sm min-w-[90px]">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-pixel">
+              SCORE
+            </div>
+            <div className="text-2xl font-pixel text-yellow-300 drop-shadow">
+              {score}
+            </div>
+            <div className="border-t border-[#203152] my-1"></div>
+            <div className="text-[9px] uppercase tracking-wider text-slate-400 font-pixel">
+              BEST
+            </div>
+            <div className="text-sm font-pixel text-white">
+              {bestScore}
+            </div>
+          </div>
+
+          {/* Audio Mute Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleSound();
+            }}
+            className="p-2.5 bg-[#0b111e]/90 hover:bg-[#1a253d] border-2 border-[#203152] rounded-xl text-yellow-300 shadow-pixel transition-all hover:scale-105 active:scale-95"
+            title={isMuted ? "Unmute Sound" : "Mute Sound"}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5 text-slate-400" /> : <Volume2 className="w-5 h-5 text-yellow-400" />}
+          </button>
+        </div>
       </div>
 
       {/* Space to Play Prompt Banner (matching reference image) */}
@@ -835,12 +893,30 @@ export default function FlappyHeroGame({ onScoreUpdate }: FlappyHeroGameProps) {
               </div>
             </div>
 
-            <button
-              onClick={restartGame}
-              className="w-full flex items-center justify-center gap-2 bg-[#ffce00] hover:bg-[#ffd83b] text-black font-pixel text-xs py-3 px-4 rounded-xl border-2 border-black shadow-pixel active:translate-y-1 transition-all"
-            >
-              <RotateCcw className="w-4 h-4" /> PLAY AGAIN [SPACE]
-            </button>
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={restartGame}
+                className="w-full flex items-center justify-center gap-2 bg-[#ffce00] hover:bg-[#ffd83b] text-black font-pixel text-xs py-3 px-4 rounded-xl border-2 border-black shadow-pixel active:translate-y-1 transition-all"
+              >
+                <RotateCcw className="w-4 h-4" /> PLAY AGAIN [SPACE]
+              </button>
+
+              <button
+                onClick={handleExploreWebsite}
+                className="w-full flex items-center justify-center gap-2 bg-[#1e293b] hover:bg-[#334155] text-white font-pixel text-xs py-2.5 px-4 rounded-xl border-2 border-slate-600 shadow-pixel active:translate-y-1 transition-all"
+              >
+                🌐 EXPLORE WEBSITE
+              </button>
+
+              {onSwitchToDino && (
+                <button
+                  onClick={onSwitchToDino}
+                  className="w-full flex items-center justify-center gap-2 bg-[#064e3b]/80 hover:bg-[#065f46] text-emerald-300 font-pixel text-[11px] py-2 px-3 rounded-xl border border-emerald-500/50 shadow-pixel active:translate-y-1 transition-all"
+                >
+                  🦖 SWITCH TO DINO JUMP
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
