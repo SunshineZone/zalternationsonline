@@ -11,7 +11,7 @@ export interface Project {
   accentColor: string;
   status: string;
   badge?: string;
-  imageType: 'academy' | 'ai' | 'pay' | 'simonas' | 'edugate';
+  imageType: 'academy' | 'ai' | 'pay' | 'simonas' | 'edugate' | 'nutrilook';
   links: {
     live?: string;
     demo?: string;
@@ -20,6 +20,36 @@ export interface Project {
 }
 
 export const PROJECTS: Project[] = [
+  {
+    id: "nutrilook",
+    title: "NutriLook",
+    subtitle: "AI Food Nutrition & Diet Target Tracker",
+    category: "HealthTech & AI",
+    tags: ["Web", "AI Vision", "HealthTech", "Diet"],
+    description: "Aplikasi cerdas untuk menganalisa nutrisi makanan, kalori, protein, lemak, dan karbohidrat secara real-time via foto.",
+    fullDescription: "NutriLook adalah aplikasi cerdas berbasis Next.js dan AI Vision untuk menganalisis kandungan gizi makanan secara instan melalui foto piring atau unggah galeri. Membantu pengguna menghitung kecukupan kalori harian, rasio makronutrisi (protein, lemak, karbohidrat), mencatat riwayat makan harian, serta menetapkan target penurunan maupun penambahan berat badan idaman.",
+    features: [
+      "Pindai & Analisa Makanan otomatis dari foto kamera atau galeri",
+      "Deteksi nutrisi instan: Kalori (kcal), Protein, Lemak, dan Karbohidrat",
+      "Targeting kalori harian dinamis & pelacak berat badan idaman",
+      "Riwayat makan harian terintegrasi kalender dan ringkasan nutrisi",
+      "Koleksi preset menu siap uji: Dada Ayam Salad, Rendang, Salmon Brokoli, Avocado Toast"
+    ],
+    metrics: [
+      { label: "Detection Speed", value: "<1.5s" },
+      { label: "Accuracy Rating", value: "96.4%" },
+      { label: "Active Scans", value: "25,000+" }
+    ],
+    accentColor: "#10b981",
+    status: "Live",
+    badge: "Live on Vercel",
+    imageType: "nutrilook",
+    links: {
+      live: "https://nutri-look.vercel.app",
+      demo: "https://nutri-look.vercel.app",
+      github: "https://github.com/SunshineZone/NutriLook"
+    }
+  },
   {
     id: "zalternations-academy",
     title: "Zalternations Academy",

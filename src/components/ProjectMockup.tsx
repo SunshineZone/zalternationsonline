@@ -3,11 +3,99 @@
 import React from "react";
 
 interface ProjectMockupProps {
-  type: "academy" | "ai" | "pay" | "simonas" | "edugate";
+  type: "academy" | "ai" | "pay" | "simonas" | "edugate" | "nutrilook";
   title: string;
 }
 
 export default function ProjectMockup({ type }: ProjectMockupProps) {
+  if (type === "nutrilook") {
+    return (
+      <div className="w-full h-40 sm:h-44 bg-gradient-to-br from-[#062c22] via-[#064e3b] to-[#042f2e] rounded-lg p-2.5 flex flex-col justify-between overflow-hidden relative border border-emerald-400/50">
+        {/* Mock browser header */}
+        <div className="flex items-center justify-between border-b border-emerald-500/20 pb-1.5">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+            <div className="w-2 h-2 rounded-full bg-teal-400"></div>
+            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+          </div>
+          <div className="text-[9px] font-mono text-emerald-300 bg-black/40 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1">
+            <span>nutri-look.vercel.app</span>
+          </div>
+          <span className="text-[8px] text-emerald-400 font-mono flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            AI Live
+          </span>
+        </div>
+
+        {/* Mock Page Content */}
+        <div className="flex items-center justify-between px-2 pt-0.5">
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <span className="text-[8px] bg-emerald-400 text-slate-950 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                AI Nutrition
+              </span>
+              <span className="text-[8px] text-emerald-300 font-mono">Vision v2.1</span>
+            </div>
+            <div className="text-xs font-bold text-white leading-tight">
+              Food & Diet Tracker
+            </div>
+            <div className="text-[9px] text-emerald-200/90 font-mono">
+              Target: <strong className="text-emerald-400">68 kg</strong> • 1900 kcal/day
+            </div>
+            <div className="flex items-center gap-1 pt-0.5">
+              <span className="text-[7px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded">
+                📷 Scan Photo
+              </span>
+              <span className="text-[7px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded">
+                ⚡ Macro Split
+              </span>
+            </div>
+          </div>
+
+          {/* Pixel Avocado / Healthy Salad Bowl Vector */}
+          <div className="w-16 h-16 relative flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-14 h-14" shapeRendering="crispEdges">
+              {/* Bowl */}
+              <rect x="4" y="13" width="16" height="3" fill="#334155" />
+              <rect x="5" y="16" width="14" height="3" fill="#1e293b" />
+              <rect x="7" y="19" width="10" height="2" fill="#0f172a" />
+              {/* Healthy Greens */}
+              <rect x="5" y="10" width="4" height="3" fill="#22c55e" />
+              <rect x="9" y="8" width="5" height="5" fill="#10b981" />
+              <rect x="14" y="9" width="5" height="4" fill="#15803d" />
+              {/* Avocado slice */}
+              <rect x="7" y="9" width="4" height="4" fill="#84cc16" />
+              <rect x="8" y="10" width="2" height="2" fill="#65a30d" />
+              {/* Cherry Tomato */}
+              <rect x="15" y="11" width="3" height="3" fill="#ef4444" />
+              {/* Salmon / Protein */}
+              <rect x="11" y="11" width="3" height="3" fill="#f97316" />
+              {/* Sparkles */}
+              <rect x="18" y="4" width="2" height="2" fill="#34d399" />
+              <rect x="3" y="6" width="2" height="2" fill="#34d399" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Macro Nutrition Pills */}
+        <div className="grid grid-cols-3 gap-1 pt-1 border-t border-emerald-500/20">
+          <div className="bg-emerald-950/70 border border-emerald-500/30 rounded p-0.5 text-center">
+            <span className="text-[7px] text-emerald-400 block font-mono">CALORIES</span>
+            <span className="text-[9px] font-bold text-white">480 kcal</span>
+          </div>
+          <div className="bg-emerald-950/70 border border-emerald-500/30 rounded p-0.5 text-center">
+            <span className="text-[7px] text-teal-400 block font-mono">PROTEIN</span>
+            <span className="text-[9px] font-bold text-white">38g (High)</span>
+          </div>
+          <div className="bg-emerald-950/70 border border-emerald-500/30 rounded p-0.5 text-center">
+            <span className="text-[7px] text-amber-400 block font-mono">STATUS</span>
+            <span className="text-[9px] font-bold text-emerald-300">Healthy ✅</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (type === "academy") {
     return (
       <div className="w-full h-40 sm:h-44 bg-gradient-to-br from-blue-600 via-sky-600 to-indigo-700 rounded-lg p-2.5 flex flex-col justify-between overflow-hidden relative border border-blue-400/40">

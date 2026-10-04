@@ -86,8 +86,8 @@ export default function FeaturedProjects() {
           </div>
         </div>
 
-        {/* 4 Projects Grid Cards matching reference image layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Featured Projects Grid Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           {PROJECTS.map((proj, idx) => (
             <div
               key={proj.id}
